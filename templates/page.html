@@ -1,0 +1,190 @@
+<!-- 
+    Copyright (C) 2024 Nicholas Chong (contact@nicholascjl.dev)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload</title>
+    <script src="{{ url_for('static', path='/js/jquery-3.6.0.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/helper.js') }}"></script>
+    <script>
+        $(document).ready(function() {        
+            var uuids = null;
+            var successes = {};
+
+            // Function to handle form submission
+            function handleSubmit(event) {
+                event.preventDefault();
+                
+                // Display loading bar
+                $('#loading-bar').show();
+                $('#progress').show();
+
+                // Make POST request to upload files
+                $.ajax({
+                    url: '/upload-files',
+                    type: 'POST',
+                    data: new FormData($('#upload-form')[0]),
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        // Hide upload form
+                        $('#upload-form').hide();
+                        
+                        // Store list of uuids returned from post request in global variable
+                        uuids = response.uuids;
+                        for (var i = 0; i < uuids.length; i++) {
+                            successes[uuids[i]] = false;
+                        }
+                        // Start checking status
+                        checkStatus();
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+
+            }
+            
+            // Function to check job status
+            function checkStatus() {
+                /*
+                    For each uuid in the list of uuids,
+                    make a GET request to the status endpoint.
+                    The status bar will be updated based on the percentage
+                    of the total number of successes returned from the endpoint.
+                */
+                // Total number of uuids
+                var total = uuids.length;
+                // Total number of successes
+                var num_successes = 0;
+
+                console.log(successes)
+
+                // Iterate through each uuid
+                for (var i = 0; i < total; i++) {
+                    // Make GET request to status endpoint
+                    $.ajax({
+                        url: '/status',
+                        type: 'GET',
+                        data: {uuid: uuids[i]},
+                        success: function(response) {
+                            // If the status is true, change dictionary value of success uuid to true
+                            if (response.status) {
+                                successes[response.uuid] = true;
+                            }
+                        },
+                    });
+                }
+                
+                // Count the number of successes in the dictionary
+                for (var key in successes) {
+                    if (successes[key]) {
+                        num_successes++;
+                    }
+                }
+                
+                console.log(num_successes)
+                // Update status on the webpage
+                $('#progress').width((num_successes / total) * 100 + '%');
+                $('#status').text(num_successes + ' of ' + total + ' files completed.');
+            
+                // If all files are completed, display download button
+                if (num_successes === total) {
+                    $('#download-button').show();
+                } else {
+                    // If not all files are completed, check status again after 1 second
+                    setTimeout(checkStatus, 1000);
+                }
+            }
+            
+            // Function to handle file download
+            function handleDownload() {
+                console.log(uuids)
+            //     // Make POST request to download endpoint with list of uuids
+            //     $.ajax({
+            //         url: '/download',
+            //         type: 'POST',
+            //         data: {uuids: uuids},
+            //         success: function(response) {
+            //             // Create a link to download the zip file
+            //             var link = document.createElement('a');
+            //             link.href = response.url;
+            //             link.download = response.filename;
+            //             document.body.appendChild(link);
+            //             link.click();
+            //             document.body.removeChild(link);
+            //         },
+            //         error: function(error) {
+            //             console.log(error);
+            //         }
+            //     });           
+            // }
+            // Make download button point to download endpoint with list of uuids
+            window.location.href = '/download?uuids=' + uuids.join('&uuids=');
+            }
+
+            
+            // Attach event listeners
+            $('#upload-form').submit(handleSubmit);
+            $('#download-button').click(handleDownload);
+        });
+    </script>
+    <style>
+        #loading-bar {
+            display: none;
+            margin: 20px;
+            width: 70%;
+            height: 20px;
+            background-color: lightgray;
+        }
+
+        #progress {
+            display: none;
+            width: 0%;
+            height: 20px;
+            background-color: green;
+        }
+        
+        #status {
+            margin-top: 10px;
+        }
+        
+        #download-button {
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Upload</h1>
+    
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="files" multiple>
+        <button type="submit">Upload</button>
+    </form>
+    
+    <div id="loading-bar">
+        <div id="progress"></div>
+    </div>
+    
+    <div id="status"></div>
+    
+    <button id="download-button">Download</button>
+
+</body>
+</html>
