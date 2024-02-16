@@ -26,6 +26,17 @@ docker compose up
 
 3. Access the webapp at `http://localhost:9876`
 
+## Examples
+
+Examples below are 320px wide base images upscaled with default settings.
+
+|Before upscaling|After upscaling|
+|:----------------:|:---------------:|
+|<img src="examples/cat.jpg" width="700"/>|<img src="examples/cat_upscaled.png" width="700"/>|
+|<img src="examples/nature.jpg" width="700"/>|<img src="examples/nature_upscaled.png" width="700"/>|
+|<img src="examples/house.jpg" width="700"/>|<img src="examples/house_upscaled.png" width="700"/>|
+
+
 ## Using a different model
 To use a different model,
 
