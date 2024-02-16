@@ -43,7 +43,4 @@ def convert_image_to_b64(image: Image) -> str:
 
 def convert_b64_to_image(b64_string: str) -> Image:
     # Converts base64 string to image
-    print(type(b64_string))
-    print(len(b64_string))
-    print(b64_string[:100])
     return Image.open(BytesIO(base64.b64decode(b64_string)))

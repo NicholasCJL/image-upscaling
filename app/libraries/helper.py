@@ -46,20 +46,7 @@ def detect_and_convert_image(file):
 
     # Convert the image to RGB format
     image_rgb = cv2.cvtColor(img_np, cv2.COLOR_BGR2RGB)
-    print(type(image_rgb))
     return Image.fromarray(image_rgb)
-
-def escape_html(text):
-    return (text.replace(r'\\', r'\\\\')
-            .replace(r'\b', r'\\b')
-            .replace(r'\n', r'\\n')
-            .replace(r'\r', r'\\r')
-            .replace(r'\t', r'\\t')
-            .replace(r'\f', r'\\f')
-            .replace(r'\v', r'\\v')
-            .replace(r'\0', r'\\0')
-            .replace(r'"', r'\\"')
-            .replace(r"'", r"\\'"))
 
 def convert_to_png(image: np.ndarray) -> bytes:
     # Converts numpy array of image to png format
@@ -76,15 +63,12 @@ def convert_image_to_b64(image: Image) -> str:
 
 def convert_b64_to_image(b64_string: str) -> Image:
     # Converts base64 string to image
-    print(type(b64_string))
-    print(len(b64_string))
-    print(b64_string[:100])
     return Image.open(BytesIO(base64.b64decode(b64_string)))
 
 def zip_images(images: list[tuple[BytesIO, str]]):
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'a', zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
-        for i, (image, name) in enumerate(images):
+        for _, (image, name) in enumerate(images):
             zip_file.writestr(f'{Path(name).stem}.png', image.getvalue())
 
     zip_buffer.seek(0)
