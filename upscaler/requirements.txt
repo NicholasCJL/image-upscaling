@@ -1,0 +1,8 @@
+accelerate==0.27.2
+diffusers==0.26.3
+fastapi==0.109.2
+opencv-python==4.9.0.80
+pillow==10.2.0
+transformers==4.37.2
+uvicorn[standard]==0.27.1
+xformers==0.0.23.post1
