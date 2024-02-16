@@ -76,7 +76,7 @@ async def predict(image_data: ImageData):
     """
     Predicts the output of the image.
     """
-    print(f"Upscaler:\nReceived image data with name: {image_data.name}")
+    print(f"Upscaler: Received image data with name: {image_data.name}")
     image = convert_b64_to_image(image_data.image)
     with ClearCache():
         upscaled_image = ml_models["upscaler"](prompt="",
