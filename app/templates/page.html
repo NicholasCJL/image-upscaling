@@ -115,25 +115,7 @@
             // Function to handle file download
             function handleDownload() {
                 console.log(uuids)
-            //     // Make POST request to download endpoint with list of uuids
-            //     $.ajax({
-            //         url: '/download',
-            //         type: 'POST',
-            //         data: {uuids: uuids},
-            //         success: function(response) {
-            //             // Create a link to download the zip file
-            //             var link = document.createElement('a');
-            //             link.href = response.url;
-            //             link.download = response.filename;
-            //             document.body.appendChild(link);
-            //             link.click();
-            //             document.body.removeChild(link);
-            //         },
-            //         error: function(error) {
-            //             console.log(error);
-            //         }
-            //     });           
-            // }
+                
             // Make download button point to download endpoint with list of uuids
             window.location.href = '/download?uuids=' + uuids.join('&uuids=');
             }
