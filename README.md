@@ -27,12 +27,7 @@ docker compose up
 3. Access the webapp at `http://localhost:9876`
 
 ## Using a different model
-To use a different model,
-
-1. modify the model downloading in `upscaler/download_model.py` and
-2. the model pipeline in `upscaler/main.py` for both the model loading and pipeline inference.
-
-The relevant code for model loading is in the `lifespan` method, and the relevant code for pipeline inference is in the `upscaled_image = ml_models["upscaler"]` function call.
+To use a different model, simply modify the model pipeline in `upscaler/main.py` for both the model loading and pipeline inference. The relevant code for model loading is in the `lifespan` method, and the relevant code for pipeline inference is in the `upscaled_image = ml_models["upscaler"]` function call.
 
 ## Things To Note
 The upscaler works best with small images of both dimensions ~360 to 480p. The images do not need to be square.
