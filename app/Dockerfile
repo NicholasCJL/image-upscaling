@@ -13,4 +13,3 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["uvicorn", "main:app", "--port", "9876", "--host", "0.0.0.0"]
-# CMD ["celery", "-A", "taskqueue.taskqueue", "worker", "--pool=solo", "--loglevel=info"]
