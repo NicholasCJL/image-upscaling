@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  webapp:
+    container_name: webapp
+    build:
+      context: ./app
+    ports:
+      - "9876:9876"
+    networks:
+      - upscaler_network
+    depends_on:
+      - redis
+  
+  taskqueue:
+    container_name: taskqueue
+    build:
+      context: ./taskqueue
+    networks:
+      - upscaler_network
+    depends_on:
+      - redis
+
+  redis:
+    container_name: redis
+    image: redis:alpine3.19
+    networks:
+      - upscaler_network
+
+  upscaler:
+    container_name: upscaler
+    build:
+      context: ./upscaler
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - upscaler_network
+
+networks:
+  upscaler_network:
