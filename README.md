@@ -38,3 +38,7 @@ The relevant code for model loading is in the `lifespan` method, and the relevan
 The upscaler works best with small images of both dimensions ~360 to 480p. The images do not need to be square.
 
 Larger images will work, but they require huge amounts of VRAM that quickly become intractable. The time taken for the upscaling also increases with image resolution.
+
+Text tends to be upscaled poorly, especially when the initial image has low resolution text.
+
+To keep the upscaling process fast, the number of inference steps is kept low. This can be modified in the `upscaler/main.py` file in the pipeline inference call.
