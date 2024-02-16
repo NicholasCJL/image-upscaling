@@ -28,9 +28,9 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import torch
 
-from upscaler.libraries.helper import (convert_image_to_b64,
-                                       convert_b64_to_image,
-                                       ImageData)
+from libraries.helper import (convert_image_to_b64,
+                              convert_b64_to_image,
+                              ImageData)
 
 
 ml_models = {}
@@ -39,11 +39,17 @@ ml_models = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_id = "stabilityai/stable-diffusion-x4-upscaler"
-    pipeline = StableDiffusionUpscalePipeline.from_pretrained(model_id,
-                                                              torch_dtype=torch.float16)
-    pipeline = pipeline.to(device)
-    pipeline.set_use_memory_efficient_attention_xformers(True)
+    model_id = "upscaler"
+    if device.type == "cuda":
+        pipeline = StableDiffusionUpscalePipeline.from_pretrained(model_id,
+                                                                torch_dtype=torch.float16,
+                                                                use_safetensors=True)
+        pipeline = pipeline.to(device)
+        pipeline.enable_xformers_memory_efficient_attention()
+    else:
+        pipeline = StableDiffusionUpscalePipeline.from_pretrained(model_id,
+                                                                use_safetensors=True)
+        pipeline = pipeline.to(device)
 
     # Load the ML model
     ml_models["upscaler"] = pipeline
@@ -70,10 +76,11 @@ async def predict(image_data: ImageData):
     """
     Predicts the output of the image.
     """
+    print(f"Upscaler:\nReceived image data with name: {image_data.name}")
     image = convert_b64_to_image(image_data.image)
     with ClearCache():
         upscaled_image = ml_models["upscaler"](prompt="",
                                                image=image,
-                                               num_inference_steps=20).images[0]
+                                               num_inference_steps=15).images[0]
     return JSONResponse({'image': convert_image_to_b64(upscaled_image),
                          'name': image_data.name})
