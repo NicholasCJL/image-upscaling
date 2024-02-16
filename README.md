@@ -5,7 +5,7 @@ This is a simple image upscaling app that is designed to run with minimal config
 Due to the nature of the model, using a GPU is **highly recommended**.
 
 ## Requirements
-This repository is designed to run with docker compose on a machine with an nvidia GPU with compute capability >=3.5 with drivers supporting CUDA >=11.8. If you have an nvidia GPU with the Maxwell architecture (GTX 9xx series) and newer with at least 8GB of VRAM, you should be able to run this.
+This repository is designed to run with docker compose on a machine with an nvidia GPU with compute capability >=3.5 with drivers supporting CUDA >=11.8. If you have an nvidia GPU with the Maxwell architecture (GTX 9xx series) and newer with at least 8GB of VRAM, you should be able to run this. The model itself requires only ~4GB VRAM, any extra VRAM budget is related to the size of images you can upscale (more VRAM = larger base image resolution).
 
 The CUDA version packaged with the docker containers can be modified if needed by modifying the base image in `upscaler/Dockerfile`. If you would like to experiment running with a CPU, simply remove the GPU binding in `docker-compose.yml`.
 
