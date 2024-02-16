@@ -24,6 +24,8 @@ import asyncio
 import io
 from pathlib import Path
 
+import celery
+from celery.result import AsyncResult
 from fastapi import APIRouter, Request, UploadFile, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
@@ -35,12 +37,14 @@ from libraries.helper import (detect_and_convert_image,
                               convert_b64_to_image,
                               zip_images)
 from libraries.helper import ImageData
-from taskqueue.taskqueue import predict
 
 
 router = APIRouter()
 
 templates = Jinja2Templates(directory="templates", autoescape=False)
+
+BROKER_URL = 'redis://redis:6379/0'
+celery_app = celery.Celery('tasks', broker=BROKER_URL, backend=BROKER_URL)
 
 
 @router.get("/download", response_description='zip')
@@ -48,7 +52,7 @@ async def download(uuids: list[str] = Query(...)):
     print(uuids)
     images = []
     for uuid in uuids:
-        result = predict.AsyncResult(uuid)
+        result = AsyncResult(uuid, app=celery_app)
         if result.ready():
             result_data = result.get()
             image = convert_b64_to_image(result_data['image'])
@@ -67,7 +71,7 @@ async def download(uuids: list[str] = Query(...)):
 
 @router.get("/status")
 async def status(uuid: str):
-    result = predict.AsyncResult(uuid)
+    result = AsyncResult(uuid, app=celery_app)
     return JSONResponse({"status": result.ready(), "uuid": uuid})
 
 
@@ -77,16 +81,10 @@ async def upload_files(request: Request, files: list[UploadFile]):
     
     for file in files:
         contents = file.read()
-        print(file.filename)
         read_tasks.append(contents)
 
     uploaded_files = await asyncio.gather(*read_tasks)
-    
-    print(len(uploaded_files))
 
-    for file in uploaded_files:
-        print(type(file), len(file))
-    
     uploaded_images = [detect_and_convert_image(file) for file in uploaded_files]
 
     image_data = []
@@ -99,7 +97,8 @@ async def upload_files(request: Request, files: list[UploadFile]):
         image_b64 = convert_image_to_b64(image)
         image_data.append(ImageData(image=image_b64, name=file.filename))
         
-    result_uuids = [predict.delay(image_datum.model_dump_json()).task_id
+    result_uuids = [celery_app.send_task('predict',
+                                         (image_datum.model_dump_json(),)).task_id
                     for image_datum in image_data]
 
     return JSONResponse({"uuids": result_uuids})
