@@ -29,13 +29,13 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 import numpy as np
 
-from app.libraries.helper import (detect_and_convert_image,
-                                convert_to_png,
-                                convert_image_to_b64,
-                                convert_b64_to_image,
-                                zip_images)
-from upscaler.libraries.helper import ImageData
-from app.queue.taskqueue import predict
+from libraries.helper import (detect_and_convert_image,
+                              convert_to_png,
+                              convert_image_to_b64,
+                              convert_b64_to_image,
+                              zip_images)
+from libraries.helper import ImageData
+from taskqueue.taskqueue import predict
 
 
 router = APIRouter()
@@ -49,20 +49,9 @@ async def download(uuids: list[str] = Query(...)):
     images = []
     for uuid in uuids:
         result = predict.AsyncResult(uuid)
-        # print(result)
-        # print(type(result))
-        # print(result.state)
-        # print(result.ready())
         if result.ready():
-            # a = result.get()
-            # print(a)
             result_data = result.get()
             image = convert_b64_to_image(result_data['image'])
-            # width, height = image.size
-            # max_res = max(width, height)
-            # # limit to 720p
-            # scale = 720 / max_res if max_res > 720 else 1
-            # image = image.resize((int(width * scale), int(height * scale)))
             buffer = convert_to_png(np.asarray(image))
             io_buf = io.BytesIO(buffer)
             io_buf.seek(0)
